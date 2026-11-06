@@ -1,0 +1,141 @@
+
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.roni.library.devtools'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+
+        versionCode 1
+        versionName "1.0.0"
+
+        consumerProguardFiles "consumer-rules.pro"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            matchingFallbacks = ['release']
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile(
+                    'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
+}
+
+dependencies {
+
+
+
+
+
+    // 1. PUBLIC API
+    // Consumers can access Contracts types directly.
+    api project(':native-runtime-contracts')
+
+    // 2. INTERNAL IMPLEMENTATIONS
+    implementation project(':native-service-sdk')
+    implementation project(':native-storage-engine')
+
+    // 3. ANDROID SUPPORT
+    implementation 'androidx.annotation:annotation:1.7.0'
+
+    // 4. UNIT TESTS
+    testImplementation 'junit:junit:4.13.2'
+
+    // 5. INSTRUMENTATION TESTS
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.findByName('release')
+
+                groupId = 'com.roni.library'
+                artifactId = 'native-dev-tools-sdk'
+                version = '1.0.0'
+
+                pom {
+                    name = 'NativeDevToolsSDK'
+
+                    description = 'Developer tools SDK for the NativeRuntime Android ecosystem, providing runtime diagnostics, development utilities, inspection and debugging support.'
+
+                    url = 'https://github.com/infoadmstudio2020-cyber/native-dev-tools-sdk'
+
+                    licenses {
+                        license {
+                            name = 'Apache-2.0'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name = 'infoadmstudio2020-cyber'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Safe task ordering
+    tasks.matching {
+        it.name in [
+                'publishToMavenLocal',
+                'publishReleasePublicationToMavenLocal'
+        ]
+    }.configureEach {
+        mustRunAfter(tasks.matching {
+            it.name == 'assembleRelease'
+        })
+    }
+
+    // JDK 17 Javadoc compatibility
+    tasks.withType(Javadoc).configureEach {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.encoding = 'UTF-8'
+    }
+}
+
+// One-click Unit Test Runner
+tasks.register('runUnitTests') {
+    group = 'verification'
+    description = 'Runs NativeDevToolsSDK unit tests.'
+
+    dependsOn('testDebugUnitTest')
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.roni.library.contracts">
+    <!-- NativeRuntimeContracts Android Library -->
+    <!-- Package: com.roni.library.contracts -->
+    <!-- Version: 1.0.2 -->
+</manifest>

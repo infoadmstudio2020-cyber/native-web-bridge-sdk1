@@ -1,0 +1,111 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.roni.library.bridge'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.1"
+        consumerProguardFiles "consumer-rules.pro"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            matchingFallbacks = ['release']
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
+    testOptions { unitTests { returnDefaultValues = true } }
+}
+
+dependencies {
+    api project(':native-runtime-contracts')
+    implementation project(':native-router-sdk')
+    implementation project(':native-service-sdk')
+    implementation project(':native-logger-sdk')
+    
+    implementation 'androidx.annotation:annotation:1.7.0'
+
+    // Unit Testing
+    testImplementation 'junit:junit:4.13.2'
+
+    // Standard JSON implementation for local JVM unit tests
+    testImplementation 'org.json:json:20240303'
+
+    // Android Instrumentation Testing
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.findByName('release') ?: components.findByName('java') ?: components.findByName('default')
+                groupId    = 'com.github.native-runtime'
+                artifactId = 'native-web-bridge-sdk'
+                version    = '1.0.1'
+
+                pom {
+                    name        = 'NativeWebBridgeSDK'
+                    description = 'Bi-directional JavaScript-Java messaging bridge with callback dispatching for NativeRuntime.'
+                    url         = 'https://github.com/infoadmstudio2020-cyber/NativeWebBridgeSDK'
+                    licenses {
+                        license {
+                            name = 'Apache-2.0'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'NativeRuntime Team'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    tasks.matching { it.name in ['publishToMavenLocal', 'publishReleasePublicationToMavenLocal'] }.configureEach {
+        mustRunAfter(tasks.matching { it.name == 'assembleRelease' })
+    }
+
+    tasks.withType(Javadoc).configureEach {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.encoding = 'UTF-8'
+    }
+}
+
+// One-click Unit Test Runner
+tasks.register('runUnitTests') {
+    group = 'verification'
+    description = 'Runs NativeServiceSDK unit tests.'
+
+    dependsOn('testDebugUnitTest')
+}

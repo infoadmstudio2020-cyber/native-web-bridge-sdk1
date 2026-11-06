@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = 'NativeRuntimeSDK'
+include ':native-runtime-sdk'
+include ':native-analytics-engine'
+include ':native-dev-tools-sdk'
+include ':native-logger-sdk'
+include ':native-network-engine'
+include ':native-platform-engine'
+include ':native-router-sdk'
+include ':native-runtime-contracts'
+include ':native-runtime-engine'
+include ':native-runtime-ui'
+include ':native-security-engine'
+include ':native-service-sdk'
+include ':native-storage-engine'
+include ':native-theme-engine'
+include ':native-web-bridge-sdk'
+
+include ':app'
